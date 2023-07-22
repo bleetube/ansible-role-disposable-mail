@@ -1,0 +1,190 @@
+# {{ ansible_managed }}
+
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+myorigin = $mydomain
+
+smtpd_banner = {{ postfix_smtpd_banner }}
+biff = no
+
+{% if postfix_domain is defined %}
+mydomain = {{ postfix_domain }}
+
+# https://www.postfix.org/VIRTUAL_README.html#virtual_mailbox
+# https://doc.dovecot.org/configuration_manual/home_directories_for_virtual_users/#ways-to-set-up-home-directory
+virtual_mailbox_domains = $mydomain
+virtual_mailbox_base = {{ postfix_virtual_mailbox_base }}/{{ postfix_domain }}
+virtual_mailbox_maps = {{ postfix_default_database_type }}:{{ postfix_virtual_mailbox_maps }}
+virtual_mailbox_limit = 0
+# User: {{ postfix_maildir_user }}
+virtual_uid_maps = static:{{ postfix_virtual_uid }}
+virtual_gid_maps = static:{{ postfix_virtual_gid }}
+virtual_alias_maps = {{ postfix_default_database_type }}:{{ postfix_virtual_aliases_file }}
+{% endif %}
+
+## Delivering Mail
+# https://www.postfix.org/SMTPD_ACCESS_README.html
+smtpd_tls_security_level = {{ postfix_smtpd_tls_security_level }}
+smtp_tls_CApath = {{ postfix_smtp_tls_CApath }}
+
+# Anvil
+# http://www.postfix.org/TUNING_README.html#conn_limit
+smtpd_client_connection_count_limit = {{ postfix_smtpd_client_connection_count_limit }}
+smtpd_client_connection_rate_limit = {{ postfix_smtpd_client_connection_rate_limit }}
+smtpd_client_message_rate_limit = {{ postfix_smtpd_client_message_rate_limit }}
+smtpd_client_new_tls_session_rate_limit = {{ postfix_smtpd_client_new_tls_session_rate_limit }}
+smtpd_client_auth_rate_limit = {{ postfix_smtpd_client_auth_rate_limit }}
+smtpd_client_event_limit_exceptions = $mynetworks
+
+{% if postfix_compatibility_level is defined %}
+compatibility_level = {{ postfix_compatibility_level }}
+{% endif %}
+
+# TLS parameters
+# http://www.postfix.org/TLS_README.html
+smtpd_tls_dh1024_param_file = {{ postfix_smtpd_tls_dh1024_param_file }}
+{% if postfix_smtpd_tls_security_level != 'encrypt' %}
+smtpd_tls_auth_only = yes
+{% endif %}
+smtpd_tls_cert_file = {{ postfix_smtpd_tls_cert_file }}
+smtpd_tls_key_file = {{ postfix_smtpd_tls_key_file }}
+smtpd_use_tls=yes
+# https://www.postfix.org/postconf.5.html#smtpd_tls_session_cache_database
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+# https://weakdh.org/sysadmin.html
+smtpd_tls_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CBC3-SHA, KRB5-DES, CBC3-SHA
+# https://www.postfix.org/SASL_README.html
+smtpd_sasl_type = {{ postfix_smtpd_sasl_type }}
+smtpd_sasl_path = {{ postfix_smtpd_sasl_path }}
+{% if postfix_smtpd_client_restrictions is defined %}
+smtpd_sasl_security_options = {{ postfix_smtpd_sasl_security_options }}
+{% endif %}
+smtpd_sasl_local_domain = $myhostname
+
+# https://github.com/Oefenweb/ansible-postfix/pull/123
+{% if postfix_smtp_tls_mandatory_ciphers is defined %}
+smtp_tls_mandatory_ciphers = {{ postfix_smtp_tls_mandatory_ciphers }}
+{% endif %}
+
+{% if postfix_smtpd_tls_mandatory_ciphers is defined %}
+smtpd_tls_mandatory_ciphers = {{ postfix_smtpd_tls_mandatory_ciphers }}
+{% endif %}
+
+{% if postfix_smtpd_tls_mandatory_protocols is defined %}
+smtpd_tls_mandatory_protocols = {{ postfix_smtpd_tls_mandatory_protocols }}
+{% endif %}
+
+{% if postfix_smtpd_tls_protocols is defined %}
+smtpd_tls_protocols = {{ postfix_smtpd_tls_protocols  }}
+{% endif %}
+
+{% if postfix_smtp_tls_mandatory_protocols is defined %}
+smtp_tls_mandatory_protocols = {{ postfix_smtp_tls_mandatory_protocols }}
+{% endif %}
+
+{% if postfix_smtp_tls_protocols is defined %}
+smtp_tls_protocols = {{ postfix_smtp_tls_protocols }}
+{% endif %}
+
+{% if postfix_smtpd_tls_loglevel is defined %}
+smtpd_tls_received_header = yes
+smtpd_tls_loglevel = {{ postfix_smtpd_tls_loglevel }}
+{% endif %}
+
+# See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+# information on enabling SSL in the smtp client.
+
+myhostname = {{ postfix_hostname }}
+default_database_type = {{ postfix_default_database_type }}
+alias_maps = {{ postfix_default_database_type }}:{{ postfix_aliases_file }}
+alias_database = {{ postfix_default_database_type }}:{{ postfix_aliases_file }}
+{% if postfix_virtual_aliases and postfix_domain is not defined %}
+virtual_alias_maps = {{ postfix_default_database_type }}:{{ postfix_virtual_aliases_file }}
+{% endif %}
+{% if postfix_sender_canonical_maps %}
+sender_canonical_maps = {{ postfix_sender_canonical_maps_database_type }}:{{ postfix_sender_canonical_maps_file }}
+{% endif %}
+{% if postfix_recipient_canonical_maps %}
+recipient_canonical_maps = {{ postfix_recipient_canonical_maps_database_type }}:{{ postfix_recipient_canonical_maps_file }}
+{% endif %}
+{% if postfix_transport_maps %}
+transport_maps = {{ postfix_transport_maps_database_type }}:{{ postfix_transport_maps_file }}
+{% endif %}
+{% if postfix_sender_dependent_relayhost_maps %}
+sender_dependent_relayhost_maps = {{ postfix_default_database_type }}:{{ postfix_sender_dependent_relayhost_maps_file }}
+{% endif %}
+{% if postfix_smtp_generic_maps %}
+smtp_generic_maps = {{ postfix_smtp_generic_maps_database_type }}:{{ postfix_smtp_generic_maps_file }}
+{% endif %}
+{% if postfix_header_checks %}
+smtp_header_checks = {{ postfix_header_checks_database_type }}:{{ postfix_header_checks_file }}
+{% endif %}
+mydestination = {{ postfix_mydestination | join(', ') }}
+mynetworks = {{ postfix_mynetworks | join(' ') }}
+mailbox_size_limit = 0
+recipient_delimiter = +
+{% if postfix_inet_interfaces is string %}
+inet_interfaces = {{ postfix_inet_interfaces }}
+{% else %}
+inet_interfaces = {{ postfix_inet_interfaces | join(', ') }}
+{% endif %}
+{% if postfix_inet_protocols is string %}
+inet_protocols = {{ postfix_inet_protocols }}
+{% else %}
+inet_protocols = {{ postfix_inet_protocols | join(', ') }}
+{% endif %}
+
+{% if postfix_relayhost %}
+{% if postfix_relayhost_mxlookup %}
+relayhost = {{ postfix_relayhost }}:{{ postfix_relayhost_port }}
+{% else %}
+relayhost = [{{ postfix_relayhost }}]:{{ postfix_relayhost_port }}
+{% endif %}
+{% if postfix_sasl_auth_enable %}
+smtp_sasl_auth_enable = {{ postfix_sasl_auth_enable | bool | ternary('yes', 'no') }}
+smtp_sasl_password_maps = {{ postfix_default_database_type }}:{{ postfix_sasl_passwd_file }}
+smtp_sasl_security_options = {{ postfix_sasl_security_options }}
+smtp_sasl_tls_security_options = {{ postfix_sasl_tls_security_options }}
+smtp_sasl_mechanism_filter = {{ postfix_sasl_mechanism_filter }}
+{% endif %}
+{% if postfix_relaytls %}
+smtp_use_tls = {{ postfix_relaytls | bool | ternary('yes', 'no') }}
+smtp_tls_security_level = {{ postfix_smtp_tls_security_level }}
+smtp_tls_wrappermode = {{ postfix_smtp_tls_wrappermode | bool | ternary('yes', 'no') }}
+smtp_tls_note_starttls_offer = {{ postfix_smtp_tls_note_starttls_offer | bool | ternary('yes', 'no') }}
+{% if postfix_smtp_tls_cafile is defined %}
+smtp_tls_CAfile = {{ postfix_smtp_tls_cafile }}
+{% endif %}
+{% endif %}
+{% else %}
+relayhost =
+{% endif %}
+
+{% if postfix_smtpd_client_restrictions is defined %}
+smtpd_client_restrictions = {{ postfix_smtpd_client_restrictions | join(', ') }}
+{% endif %}
+{% if postfix_smtpd_helo_restrictions is defined %}
+smtpd_helo_restrictions = {{ postfix_smtpd_helo_restrictions | join(', ') }}
+{% endif %}
+{% if postfix_smtpd_sender_restrictions is defined %}
+smtpd_sender_restrictions = {{ postfix_smtpd_sender_restrictions | join(', ') }}
+{% endif %}
+{% if postfix_smtpd_recipient_restrictions is defined %}
+smtpd_recipient_restrictions = {{ postfix_smtpd_recipient_restrictions | join(', ') }}
+{% endif %}
+{% if postfix_smtpd_relay_restrictions is defined %}
+smtpd_relay_restrictions = {{ postfix_smtpd_relay_restrictions | join(', ') }}
+{% endif %}
+{% if postfix_smtpd_data_restrictions is defined %}
+smtpd_data_restrictions = {{ postfix_smtpd_data_restrictions | join(', ') }}
+{% endif %}
+
+message_size_limit = {{  postfix_message_size_limit }}
+
+# Disable the SMTP VRFY command. This stops some techniques used to harvest email addresses.
+disable_vrfy_command = {{ postfix_disable_vrfy_command | bool | ternary('yes', 'no') }}
+
+{% for raw_option in postfix_raw_options | default([]) %}
+{{ raw_option }}
+{% endfor %}

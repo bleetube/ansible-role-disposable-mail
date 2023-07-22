@@ -1,0 +1,13 @@
+#!/bin/bash
+if [ -z $1 ];then
+    echo "Usage: ${0} <alias_name>"
+    exit 1
+fi
+
+if grep "$1@{{ postfix_domain }}" /etc/postfix/virtual
+then
+        echo "already exists" 
+        exit 0
+fi
+echo "$1@{{ postfix_domain }}      main@{{ postfix_domain }}" >> /etc/postfix/virtual
+postmap /etc/postfix/virtual

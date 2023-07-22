@@ -1,0 +1,25 @@
+---
+#- name: Assert all required variables have been defined.
+#  ansible.builtin.assert:
+#    that:
+#      - item is defined
+#      - item != ''
+#    fail_msg: "FAILED: Required mail settings are not configured."
+#    quiet: true
+#  loop:
+
+- name: Set up Maildir
+  import_tasks: maildir.yml
+  tags: maildir, postfix
+
+- name: Set up Postfix
+  import_tasks: postfix.yml
+  tags: postfix
+
+- name: Install OpenDKIM and generate keys
+  import_tasks: opendkim.yml
+  tags: dkim
+
+- name: Install and configure Dovecot
+  import_tasks: dovecot.yml
+  tags: dovecot

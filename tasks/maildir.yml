@@ -1,0 +1,43 @@
+---
+- name: Get nologin path for maildir user
+  ansible.builtin.find:
+    paths:
+      - /bin
+      - /sbin
+      - /usr/bin
+      - /usr/sbin
+    patterns: nologin
+  register: nologin_bin
+
+- name: Create maildir group
+  ansible.builtin.group:
+    name: "{{ postfix_maildir_user }}"
+    state: present
+
+- name: Ensure maildir directory
+  ansible.builtin.file:
+    name: "{{ postfix_virtual_mailbox_base }}/{{ postfix_domain }}"
+    owner: root
+    group: "{{ postfix_maildir_user }}"
+    state: directory
+    mode: '0770'
+
+- name: Create maildir user
+  ansible.builtin.user:
+    shell: "{{ nologin_bin.files[0].path }}"
+    home: "{{ postfix_virtual_mailbox_base }}"
+    name: "{{ postfix_maildir_user }}"
+    group: "{{ postfix_maildir_user }}"
+    groups: mail
+    system: true
+    append: true
+
+- name: Get maildir user's id
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ postfix_maildir_user }}"
+
+- name: Get maildir user's group id
+  ansible.builtin.getent:
+    database: group
+    key: "{{ postfix_maildir_user }}"

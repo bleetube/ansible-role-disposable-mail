@@ -1,0 +1,25 @@
+---
+- name: reload dovecot 
+  service: name=dovecot state=reloaded
+
+- name: restart dovecot 
+  service: name=dovecot state=restarted
+
+- name: restart opendkim 
+  service: name=opendkim state=restarted
+
+- name: restart postfix 
+  service: name=postfix state=restarted
+
+- name: reload postfix 
+  service: name=postfix@- state=reload
+
+- name: new virtual mailboxes
+  ansible.builtin.command:
+    chdir: /etc/postfix
+    cmd: postmap vmailbox
+
+- name: new virtual mail aliases
+  ansible.builtin.command:
+    chdir: /etc/postfix
+    cmd: postmap virtual

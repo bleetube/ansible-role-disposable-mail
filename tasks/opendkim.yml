@@ -1,0 +1,35 @@
+---
+- name: Install and update OpenDKIM
+  ansible.builtin.package:
+    name:
+      - opendkim
+      - opendkim-tools
+    state: latest
+
+- name: Configure OpenDKIM
+  ansible.builtin.template:
+    src: opendkim.conf.j2
+    dest: /etc/opendkim.conf
+  notify: restart opendkim
+
+- name: Ensure OpenDKIM unix socket path for postfix
+  ansible.builtin.file:
+    path: /var/spool/postfix/opendkim
+    state: directory
+    owner: postfix
+    group: opendkim
+    mode: '0770'
+  notify: restart opendkim
+
+- name: Generate DKIM signing key
+  ansible.builtin.command:
+    cmd: "opendkim-genkey -r -s {{ dkim_selector }} -b 2048 -d {{ postfix_domain }} --directory /etc/dkimkeys"
+    creates: "/etc/dkimkeys/{{ dkim_selector }}.private"
+  become: true
+  become_user: opendkim
+
+- name: Ensure postfix is in opendkim group
+  ansible.builtin.user:
+    name: postfix
+    groups: opendkim
+    append: true

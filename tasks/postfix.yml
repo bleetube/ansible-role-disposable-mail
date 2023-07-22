@@ -1,0 +1,92 @@
+---
+# Much of the postfix setup process was based on github.com/Oefenweb/ansible-postfix
+#
+# Copyright (c) Oefenweb.nl <https://github.com/Oefenweb>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is furnished
+# to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+- name: Configure debconf
+  debconf:
+    name: "{{ item.name }}"
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  with_items: "{{ postfix_debconf_selections }}"
+
+- name: Install and configure Postfix
+  ansible.builtin.package:
+    name: "{{ postfix_install }}"
+
+- name: Copy header checks
+  ansible.builtin.copy:
+    src: header_checks
+    dest: /etc/postfix/
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart postfix
+
+- name: Configure Postfix master process
+  ansible.builtin.copy:
+    src: master.cf
+    dest: /etc/postfix/
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart postfix
+
+- name:  Configure Postfix main process
+  ansible.builtin.template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+
+- name: Configure virtual mailboxes
+  ansible.builtin.lineinfile:
+    path: /etc/postfix/vmailbox
+    regexp: '^main@{{ postfix_domain }}\s+main/'
+    line: 'main@{{ postfix_domain }}     main/'
+    create: true
+  notify: new virtual mailboxes
+
+- name: Postmap the virtual addresses
+  ansible.builtin.lineinfile:
+    path: /etc/postfix/vmailbox
+    regexp: '^main@{{ postfix_domain }}\s+main/'
+    line: 'main@{{ postfix_domain }}     main/'
+  notify: new virtual aliases
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Generate Diffie-Hellman parameters with the size recommended by postconf (2048 bits)
+  community.crypto.openssl_dhparam:
+    path: "{{ postfix_smtpd_tls_dh1024_param_file }}"
+    size: 2048
+
+- name: Temporarily stop postfix
+  ansible.builtin.service:
+    name: postfix
+    state: stopped
+    enabled: false
+
+- name: Set up helper script to create new email aliases
+  ansible.builtin.template:
+    src: create-email-alias.j2
+    dest: /usr/local/bin/create-email-alias
+    mode: '0755'

@@ -1,0 +1,8 @@
+---
+roles:
+  - src: https://github.com/robertdebock/ansible-role-dovecot
+    name: robertdebock.dovecot
+
+# - src: https://github.com/bleetube/ansible-role-postfix
+#   name: oefenweb.postfix
+#   version: virtual

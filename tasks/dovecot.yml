@@ -1,0 +1,34 @@
+---
+- name: Remove default include path to manage configuration via a single template.
+  ansible.builtin.lineinfile:
+    path: /etc/dovecot/dovecot.conf
+    regexp: '^!include conf.d'
+    line: '#!include conf.d/*.conf'
+
+- name: Register Dovecot account database
+  ansible.builtin.file:
+    path: /etc/dovecot/imap.passwd
+    state: touch
+    owner: root
+    group: dovecot
+    mode: '0640'
+  changed_when: false
+
+- name: Ensure mail_home directory (Dovecot)
+  ansible.builtin.file:
+    name: /srv/mail
+    owner: dovecot
+    group: dovecot
+    state: directory
+    mode: '0770'
+
+- name: Ensure local configuration file is included from dovecot.conf
+  ansible.builtin.lineinfile:
+    path: /etc/dovecot/dovecot.conf
+    line: '!include_try local.conf'
+
+- name: Configure Dovecot
+  ansible.builtin.template:
+    src: dovecot.conf.j2
+    dest: /etc/dovecot/local.conf
+  notify: restart dovecot

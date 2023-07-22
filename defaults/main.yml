@@ -1,0 +1,121 @@
+---
+postfix_domain: ""
+postfix_virtual_mailbox_base: /var/disposable-mail
+
+postfix_smtpd_banner: "$myhostname ESMTP $mail_name ({{ postfix_domain }})"
+dkim_selector: mail
+dkim_key_path: /etc/dkimkeys
+#postfix_hostname: "{{ dkim_selector }}.{{ postfix_domain }}"
+imap_bind_address: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+#postfix_maildir_user: maildir
+postfix_virtual_uid: "{{ ansible_facts.getent_passwd.maildir[1] }}"
+postfix_virtual_gid: "{{ ansible_facts.getent_group.maildir[1] }}"
+#postfix_inet_interfaces: all
+#postfix_mynetworks:
+#  - 127.0.0.0/8
+
+#postfix_inet_protocols: ipv4
+postfix_mydestination:
+  - $myhostname
+
+#smtpd_tls_security_level: may
+# https://www.postfix.org/SMTPD_ACCESS_README.html
+postfix_smtpd_relay_restrictions:
+  - permit_mynetworks
+  - permit_sasl_authenticated
+  - reject_unauth_destination
+postfix_smtpd_recipient_restrictions:
+  - permit_mynetworks
+  - permit_sasl_authenticated
+  - reject_unauth_destination
+
+postfix_raw_options:
+  # https://www.postfix.org/MILTER_README.html
+  - |
+    smtpd_milters = unix:opendkim/opendkim.sock 
+  - |
+    non_smtpd_milters = $smtpd_milters
+
+postfix_smtpd_client_connection_count_limit: 5 
+postfix_smtpd_client_connection_rate_limit: 30
+postfix_smtpd_client_message_rate_limit: 3 
+postfix_smtpd_client_new_tls_session_rate_limit: 3 
+postfix_smtpd_client_auth_rate_limit: 3 
+
+# robertdebock.dovecot
+dovecot_mailbox_location: "maildir:{{ postfix_virtual_mailbox_base }}/{{ postfix_domain }}/%n"
+
+postfix_install:
+  - postfix
+# - mailutils
+  - libsasl2-2
+# - sasl2-bin
+  - libsasl2-modules
+
+postfix_hostname: "{{ ansible_fqdn }}"
+postfix_mailname: "{{ ansible_fqdn }}"
+
+postfix_default_database_type: hash
+postfix_aliases: []
+postfix_virtual_aliases: []
+postfix_sender_canonical_maps: []
+postfix_sender_canonical_maps_database_type: "{{ postfix_default_database_type }}"
+postfix_recipient_canonical_maps: []
+postfix_recipient_canonical_maps_database_type: "{{ postfix_default_database_type }}"
+postfix_transport_maps: []
+postfix_transport_maps_database_type: "{{ postfix_default_database_type }}"
+postfix_sender_dependent_relayhost_maps: []
+postfix_header_checks: []
+postfix_header_checks_database_type: regexp
+postfix_generic: "{{ postfix_smtp_generic_maps }}"
+postfix_smtp_generic_maps: []
+postfix_smtp_generic_maps_database_type: "{{ postfix_default_database_type }}"
+
+postfix_relayhost: ''
+postfix_relayhost_mxlookup: false
+postfix_relayhost_port: 587
+postfix_relaytls: false
+
+postfix_sasl_auth_enable: true
+postfix_sasl_user: "postmaster@{{ ansible_domain }}"
+postfix_sasl_password: "{{ lookup('ansible.builtin.env', 'POSTFIX_SASL_PASSWORD') }}"
+postfix_sasl_security_options: noanonymous
+postfix_sasl_tls_security_options: noanonymous
+postfix_sasl_mechanism_filter: ''
+
+postfix_smtp_tls_security_level: encrypt
+postfix_smtp_tls_wrappermode: false
+postfix_smtp_tls_note_starttls_offer: true
+
+postfix_inet_interfaces: all
+postfix_inet_protocols: all
+#postfix_mydestination:
+#  - "{{ postfix_hostname }}"
+#  - localdomain
+#  - localhost
+#  - localhost.localdomain
+postfix_mynetworks:
+  - 127.0.0.0/8
+  - '[::ffff:127.0.0.0]/104'
+  - '[::1]/128'
+
+#postfix_smtpd_banner: '$myhostname ESMTP $mail_name'
+postfix_disable_vrfy_command: true
+postfix_message_size_limit: 10240000
+
+postfix_smtpd_tls_cert_file: /etc/ssl/certs/ssl-cert-snakeoil.pem
+postfix_smtpd_tls_key_file: /etc/ssl/private/ssl-cert-snakeoil.key
+postfix_smtpd_tls_security_level: may
+postfix_smtp_tls_CApath: /etc/ssl/certs
+postfix_smtpd_sasl_type: dovecot
+postfix_smtpd_sasl_security_options: noanonymous, noplaintext, forward_secrecy
+# path outside of chroot: /var/spool/postfix/private/auth
+postfix_smtpd_sasl_path: private/auth
+
+#postfix_raw_options: []
+
+#postfix_virtual_mailbox_base: /var/mail
+postfix_virtual_mailbox_maps: /etc/postfix/vmailbox
+#postfix_virtual_uid: 1000
+#postfix_virtual_gid: 1000
+postfix_maildir_user: maildir
