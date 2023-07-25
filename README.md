@@ -17,7 +17,6 @@ Usage: `addmail newservice` creates an alias to receive mail at newservice@examp
 
 * Debian/Ubuntu
 * [robertdebock.dovecot](https://github.com/robertdebock/ansible-role-dovecot)
-* oefenweb.postfix role, the [bleetube fork](https://github.com/bleetube/ansible-role-postfix)
 
 See [requirements.yml](requirements.yml)
 
