@@ -27,9 +27,23 @@
     creates: "/etc/dkimkeys/{{ dkim_selector }}.private"
   become: true
   become_user: opendkim
+  notify: restart opendkim
 
 - name: Ensure postfix is in opendkim group
   ansible.builtin.user:
     name: postfix
     groups: opendkim
     append: true
+  notify: restart opendkim
+
+- name: Register whether /var/spool/postfix/opendkim/opendkim.sock exists
+  ansible.builtin.stat:
+    path: /var/spool/postfix/opendkim/opendkim.sock
+  register: opendkim_socket
+
+- name: (Workaround) Force opendkim to restart again if the unix socket is still missing.
+  ansible.builtin.systemd:
+    name: opendkim
+    state: restarted
+  when: not opendkim_socket.stat.exists
+    

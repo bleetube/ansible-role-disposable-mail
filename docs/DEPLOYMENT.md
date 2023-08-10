@@ -25,12 +25,13 @@
 
     See `man 5 postconf` for details.
 
-6. (optional) Create another TXT record for DKIM using the contents of /etc/dkimkeys/mail.txt
+6. Sanity check: https://mxtoolbox.com/
+
+7. (optional) Create another TXT record for DKIM using the contents of /etc/dkimkeys/mail.txt
 
     * See [scripts/print-rdata.py](../scripts/print-rdata.py) for an example of how to parse mail.txt
     * See [octodns](https://github.com/octodns/octodns-easydns) and [dnscontrol](https://dnscontrol.org/)
 
-7. Sanity check: https://mxtoolbox.com/
 
-8. After records propogate, verify outbound mail using: https://www.mail-tester.com/
+8. (optional) After records propogate, verify outbound mail using: https://www.mail-tester.com/
 
