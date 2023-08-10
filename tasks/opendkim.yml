@@ -4,7 +4,7 @@
     name:
       - opendkim
       - opendkim-tools
-    state: latest
+    state: present
 
 - name: Configure OpenDKIM
   ansible.builtin.template:

@@ -25,7 +25,7 @@
 
     See `man 5 postconf` for details.
 
-6. Create another TXT record for DKIM using the contents of /etc/dkimkeys/mail.txt
+6. (optional) Create another TXT record for DKIM using the contents of /etc/dkimkeys/mail.txt
 
     * See [scripts/print-rdata.py](../scripts/print-rdata.py) for an example of how to parse mail.txt
     * See [octodns](https://github.com/octodns/octodns-easydns) and [dnscontrol](https://dnscontrol.org/)

@@ -38,7 +38,7 @@ See the [default variables](defaults/main.yml).
 - hosts: mail
   become: yes
   roles:
-    - bleetube.mail
+    - bleetube.disposable-mail
 ```
 
 ## Example Deployment
