@@ -32,12 +32,20 @@
     system: true
     append: true
 
-- name: Get maildir user's id
+- name: Add maildir user's id and group id to ansible_facts
   ansible.builtin.getent:
     database: passwd
     key: "{{ postfix_maildir_user }}"
 
-- name: Get maildir user's group id
-  ansible.builtin.getent:
-    database: group
-    key: "{{ postfix_maildir_user }}"
+#- name: Add maildir user's id and group id to ansible_facts
+#  ansible.builtin.getent:
+#    database: "{{ item }}"
+#    key: "{{ postfix_maildir_user }}"
+#  loop:
+#    - passwd
+#    - group
+
+- name: Set maildir UID and GID
+  set_fact:
+    maildir_uid: "{{ ansible_facts.getent_passwd[postfix_maildir_user][1] }}"
+    maildir_gid: "{{ ansible_facts.getent_passwd[postfix_maildir_user][2] }}"

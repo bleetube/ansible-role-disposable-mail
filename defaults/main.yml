@@ -8,8 +8,6 @@ dkim_key_path: /etc/dkimkeys
 #postfix_hostname: "{{ dkim_selector }}.{{ postfix_domain }}"
 imap_bind_address: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
 #postfix_maildir_user: maildir
-postfix_virtual_uid: "{{ ansible_facts.getent_passwd.maildir[1] }}"
-postfix_virtual_gid: "{{ ansible_facts.getent_group.maildir[1] }}"
 #postfix_inet_interfaces: all
 #postfix_mynetworks:
 #  - 127.0.0.0/8
@@ -41,9 +39,6 @@ postfix_smtpd_client_connection_rate_limit: 30
 postfix_smtpd_client_message_rate_limit: 3 
 postfix_smtpd_client_new_tls_session_rate_limit: 3 
 postfix_smtpd_client_auth_rate_limit: 3 
-
-# robertdebock.dovecot
-dovecot_mailbox_location: "maildir:{{ postfix_virtual_mailbox_base }}/{{ postfix_domain }}/%n"
 
 postfix_install:
   - postfix
@@ -119,3 +114,8 @@ postfix_virtual_mailbox_maps: /etc/postfix/vmailbox
 #postfix_virtual_uid: 1000
 #postfix_virtual_gid: 1000
 postfix_maildir_user: maildir
+
+force_dovecot_passwd_file_maildir_ids: false # useful when recovering from backup
+
+# robertdebock.dovecot
+dovecot_mailbox_location: "maildir:{{ postfix_virtual_mailbox_base }}/{{ postfix_domain }}/%n"

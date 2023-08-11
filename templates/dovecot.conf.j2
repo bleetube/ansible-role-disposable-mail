@@ -21,7 +21,7 @@ service imap-login {
 # doveadm pw -s BLF-CRYPT
 passdb {
   driver = passwd-file
-  args = username_format=%n scheme=blf-crypt /etc/dovecot/imap.passwd
+  args = username_format=%n scheme=blf-crypt {{ dovecot_passwd_file }}
   auth_verbose=yes
 }
 
@@ -30,7 +30,7 @@ passdb {
 userdb {
   driver = passwd-file
 
-  args = username_format=%n /etc/dovecot/imap.passwd
+  args = username_format=%n {{ dovecot_passwd_file }}
 
   default_fields = uid={{ postfix_maildir_user }} gid={{ postfix_maildir_user }}
 # override_fields =

@@ -22,3 +22,6 @@ postfix_smtpd_tls_dh1024_param_file: /etc/ssh/dhaparams.pem
 
 # https://github.com/vdukhovni/postfix/blob/master/postfix/INSTALL
 postfix_compatibility_level: 3.5 # Debian 11
+
+# dovecot
+dovecot_passwd_file: /etc/dovecot/imap.passwd

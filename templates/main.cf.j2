@@ -17,8 +17,8 @@ virtual_mailbox_base = {{ postfix_virtual_mailbox_base }}/{{ postfix_domain }}
 virtual_mailbox_maps = {{ postfix_default_database_type }}:{{ postfix_virtual_mailbox_maps }}
 virtual_mailbox_limit = 0
 # User: {{ postfix_maildir_user }}
-virtual_uid_maps = static:{{ postfix_virtual_uid }}
-virtual_gid_maps = static:{{ postfix_virtual_gid }}
+virtual_uid_maps = static:{{ maildir_uid }}
+virtual_gid_maps = static:{{ maildir_gid }}
 virtual_alias_maps = {{ postfix_default_database_type }}:{{ postfix_virtual_aliases_file }}
 {% endif %}
 

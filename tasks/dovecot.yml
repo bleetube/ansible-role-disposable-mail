@@ -7,7 +7,7 @@
 
 - name: Register Dovecot account database
   ansible.builtin.file:
-    path: /etc/dovecot/imap.passwd
+    path: "{{ dovecot_passwd_file }}"
     state: touch
     owner: root
     group: dovecot
@@ -31,4 +31,12 @@
   ansible.builtin.template:
     src: dovecot.conf.j2
     dest: /etc/dovecot/local.conf
+  notify: restart dovecot
+
+- name: Update UID and GID in imap.passwd
+  ansible.builtin.replace:
+    path: "{{ dovecot_passwd_file }}"
+    regexp: '(.*):(\d+):(\d+)$'
+    replace: '\1:{{ maildir_uid }}:{{ maildir_gid }}'
+  when: force_dovecot_passwd_file_maildir_ids
   notify: restart dovecot

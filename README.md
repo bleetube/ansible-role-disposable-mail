@@ -55,6 +55,14 @@ Postfix `master.cf` should configure smtpd behavior to require encrypted client 
 
 See [docs/CLIENTS.md](docs/CLIENTS.md) for notes on mail clients.
 
+## Backups
+
+See the provided [example](docs/examples/backup.sh) script. Keep in mind that when restoring the `imap.passwd` file for Dovecot, that a new system will have different user ids for maildir. There is a helper to rewrite all the uid/gids to the maildir user when restoring from a backup on a new system:
+
+```bash
+ansible-playbook -e 'force_dovecot_passwd_file_maildir_ids=yes' playbooks/mail.yml
+```
+
 ## Misc
 
 There are some interesting mta implementations that may replace or compliment parts of this stack in the future:
