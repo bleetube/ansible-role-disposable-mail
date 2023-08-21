@@ -46,4 +46,11 @@
     name: opendkim
     state: restarted
   when: not opendkim_socket.stat.exists
+
+- name: Ensure opendkim service is started and enabled.
+  ansible.builtin.service:
+    name: opendkim
+    state: started
+    enabled: yes
+
     

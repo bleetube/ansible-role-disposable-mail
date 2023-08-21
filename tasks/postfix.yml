@@ -79,11 +79,11 @@
     path: "{{ postfix_smtpd_tls_dh1024_param_file }}"
     size: 2048
 
-- name: Temporarily stop postfix
+- name: Ensure postfix service is started
   ansible.builtin.service:
     name: postfix
-    state: stopped
-    enabled: false
+    state: started
+    enabled: yes
 
 - name: Set up helper script to create new email aliases
   ansible.builtin.template:

@@ -11,10 +11,10 @@
     ```
     The `A` and `MX` records are required, while the `TXT` records are optional but recommended.
 
-2. Set a password for the "main" virtual inbox:
+2. Configure credentials for the "hello" virtual inbox on the server. Use your favorite password manager to generate a passphrase and then run this to configure it:
 
     ```shell
-    echo main:$(doveadm pw -s BLF-CRYPT) >> files/$TARGET/imap.passwd
+    sudo echo hello:$(doveadm pw -s BLF-CRYPT):$(id -u maildir):$(id -g maildir) >> /etc/dovecot/imap.passwd
     ```
 
     Also, if you use `doas` rather than `sudo`, you need to permit your ansible_user to become opendkim in your `/etc/doas.conf`:
@@ -23,26 +23,20 @@
     permit nopass blee as opendkim
     ```
 
-3. Copy a vars/targets file, update the values, and run this playbook
+3. configure some virtual aliases in /etc/postfix/virtual and run: `postmap virtual` (See `man 5 postconf` for details)
 
-    Troubleshooting: Sanity check opendkim (may need restart, although I think I fixed that):
+4. Configure your playbook's variables and run this playbook.
+
+*   (should be fixed) Troubleshooting: Sanity check opendkim, the unix socket should exist and be writable
     ```shell
     ls -AlF /var/spool/postfix/opendkim/opendkim.sock
     ```
 
-4. look at the maildir uid/gid in main.cf and use those in the imap.passwd file (switching to the dovecot role will fix that later)
+Validate your dns records: [mxtoolbox.com](https://mxtoolbox.com/)
 
-5. configure some virtual aliases in /etc/postfix/virtual and run:
+## Optional: sending authenticated mail
 
-    ```shell
-    postmap virtual vmailbox
-    ```
-
-    See `man 5 postconf` for details.
-
-6. Sanity check: https://mxtoolbox.com/
-
-7. (optional) Create another TXT record for DKIM using the contents of /etc/dkimkeys/mail.txt
+* Create another TXT record for DKIM using the contents of /etc/dkimkeys/mail.txt
 
     Here's an example line in dnscontrol:
 
@@ -51,13 +45,13 @@
     ```
 
     * See [print-rdata.py](examples/print-rdata.py) for a (kind of bad) example of how to automatically parse mail.txt
-    * See [dnscontrol](https://dnscontrol.org/) as well as [octodns](https://github.com/octodns/octodns-easydns) 
+    * You can codify your records in a git repo using a tool like [dnscontrol](https://dnscontrol.org/) as well as [octodns](https://github.com/octodns/octodns-easydns) 
 
-    If you're really feeling adventurous, you could even set up a proper dmarc address to replace the original placeholder TXT record.
+* If you're really feeling adventurous, you could even set up a proper dmarc address to replace the original placeholder TXT record.
 
     ```Javascript
     TXT('_dmarc', 'v=DMARC1; p=reject; rua=mailto:dmarc@satstack.cloud; fo=1')
     ```
 
-    After records propogate, verify outbound mail using [mail-tester](https://www.mail-tester.com/). 
+After records propogate, verify outbound mail using [mail-tester](https://www.mail-tester.com/). I can score 10/10 by sending an email with an html mime type (just copypasta something from chatgpt).
 

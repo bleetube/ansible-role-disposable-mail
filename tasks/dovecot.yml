@@ -40,3 +40,9 @@
     replace: '\1:{{ maildir_uid }}:{{ maildir_gid }}'
   when: force_dovecot_passwd_file_maildir_ids
   notify: restart dovecot
+
+- name: Ensure dovecot service is started and enabled.
+  ansible.builtin.service:
+    name: dovecot
+    state: started
+    enabled: yes

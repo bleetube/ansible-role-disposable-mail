@@ -63,6 +63,13 @@ See the provided [example](docs/examples/backup.sh) script. Keep in mind that wh
 ansible-playbook -e 'force_dovecot_passwd_file_maildir_ids=yes' playbooks/mail.yml
 ```
 
+## Troubleshooting
+
+```shell
+systemctl status opendkim dovecot postfix
+journalctl -fu postfix@-
+journalctl -fu dovecot
+```
 ## Misc
 
 There are some interesting mta implementations that may replace or compliment parts of this stack in the future:
