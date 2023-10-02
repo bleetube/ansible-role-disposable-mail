@@ -53,5 +53,5 @@ Validate your dns records: [mxtoolbox.com](https://mxtoolbox.com/)
     TXT('_dmarc', 'v=DMARC1; p=reject; rua=mailto:dmarc@satstack.cloud; fo=1')
     ```
 
-After records propogate, verify outbound mail using [mail-tester](https://www.mail-tester.com/). I can score 10/10 by sending an email with an html mime type (just copypasta something from chatgpt).
+After records propogate, verify outbound mail using [mail-tester](https://www.mail-tester.com/) or [learndmarc](https://www.learndmarc.com/). I can score 10/10 by sending an email with an html mime type (just copypasta something from chatgpt).
 
