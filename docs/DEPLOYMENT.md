@@ -11,7 +11,9 @@
     ```
     The `A` and `MX` records are required, while the `TXT` records are optional but recommended.
 
-2. Configure credentials for the "hello" virtual inbox on the server. Use your favorite password manager to generate a passphrase and then run this to configure it:
+2. Configure your playbook's variables and run this playbook.
+
+3. Configure credentials for the "hello" virtual inbox on the server. Use your favorite password manager to generate a passphrase and then run this to configure it:
 
     ```shell
     sudo echo hello:$(doveadm pw -s BLF-CRYPT):$(id -u maildir):$(id -g maildir) >> /etc/dovecot/imap.passwd
@@ -23,14 +25,7 @@
     permit nopass blee as opendkim
     ```
 
-3. configure some virtual aliases in /etc/postfix/virtual and run: `postmap virtual` (See `man 5 postconf` for details)
-
-4. Configure your playbook's variables and run this playbook.
-
-*   (should be fixed) Troubleshooting: Sanity check opendkim, the unix socket should exist and be writable
-    ```shell
-    ls -AlF /var/spool/postfix/opendkim/opendkim.sock
-    ```
+4. configure some virtual aliases in /etc/postfix/virtual and run: `postmap virtual` (See `man 5 postconf` for details)
 
 Validate your dns records: [mxtoolbox.com](https://mxtoolbox.com/)
 
